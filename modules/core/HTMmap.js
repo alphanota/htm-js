@@ -45,45 +45,27 @@ const bases = [
   new Base("N3", 15, 2, 0, 1)
 ];
 
-var vectorious = require("vectorious"),
-  Matrix = vectorious.Matrix,
-  Vector = vectorious.Vector,
-  BLAS = vectorious.BLAS; // access BLAS routines
-
-function sum(a, b) {
-  return a + b;
-}
+const sum = (accumulator, currentValue) => accumulator + currentValue;
 
 const norm_vec = v => {
-  let csqrd = Matrix.product(v, v).reduce(sum); // c^2 = a^2 + b^2
+  let csqrd = v.map(el => el * el).reduce(sum); // c^2 = a^2 + b^2
   return Math.sqrt(csqrd);
 };
 
+const scaleVec = (vec, scalar) => {
+  return vec.map(el => el * scalar);
+};
 const unit_vector = v => {
   let _mag = norm_vec(v);
-  return v.scale(1 / _mag);
+  return scaleVec(v, 1 / _mag);
 };
 //calculate midpoint for two vectors v1 v2, and store in vec w
 const m4_midpoint = (v1, v2, w) => {
-  let v1m = new Matrix([v1]);
-  let v2m = new Matrix([v2]);
-  let w_prime = unit_vector(v1m.add(v2m)).toArray()[0];
+  let vSum = [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]];
+  let w_prime = unit_vector(vSum);
   w[0] = w_prime[0];
   w[1] = w_prime[1];
   w[2] = w_prime[2];
-};
-
-const distToPlane2 = (v1, v2, p) => {
-  let X = Matrix.augment(v1.transpose(), v2.transpose());
-  let Xt = X.transpose();
-  let XtX = Xt.multiply(X);
-  let XtXinv = XtX.inverse();
-  let H = X.multiply(XtXinv);
-  H = H.multiply(Xt);
-  let yh = H.multiply(p.transpose());
-  let diff = Matrix.subtract(yh, p.transpose()); //typo in 'subtract'
-  let sqrd = Matrix.product(diff, diff);
-  return sqrd.reduce(sum);
 };
 
 const isinside = (p, v1, v2, v3) => {
